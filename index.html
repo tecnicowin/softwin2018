@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoftWin | Premium Software & Streaming Store</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- SheetJS for Excel support -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#050505',
+                        'dark-card': '#0a0a0a',
+                        'neon-blue': '#00f3ff',
+                        'neon-green': '#39ff14',
+                    },
+                    boxShadow: {
+                        'neon-blue': '0 0 20px rgba(0, 243, 255, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body class="bg-dark text-gray-100 selection:bg-neon-blue selection:text-dark">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-dark/80 backdrop-blur-md border-b border-white/5">
+        <div class="container mx-auto px-4 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-12">
+                <a href="#" class="flex items-center gap-2 group">
+                    <div class="w-10 h-10 bg-neon-blue rounded-xl flex items-center justify-center shadow-neon-blue group-hover:rotate-12 transition-transform">
+                        <i class="fas fa-code text-dark text-xl"></i>
+                    </div>
+                    <span class="text-2xl font-black tracking-tighter uppercase italic">Soft<span class="text-neon-blue">Win</span></span>
+                </a>
+                
+                <div class="hidden md:flex items-center gap-8">
+                    <button onclick="switchCatalog('software')" class="nav-link text-neon-blue font-bold border-b-2 border-neon-blue pb-1 transition-all">Software</button>
+                    <button onclick="switchCatalog('streaming')" class="nav-link text-gray-400 hover:text-neon-blue transition-all pb-1">Streaming</button>
+                    <button onclick="switchCatalog('ofertas')" class="nav-link text-gray-400 hover:text-neon-blue transition-all pb-1">Ofertas</button>
+                </div>
+            </div>
+
+
+            <div class="flex items-center gap-6">
+                <button onclick="requestAdminAccess()" class="hidden md:flex items-center gap-2 text-gray-400 hover:text-neon-blue transition-colors text-sm font-medium">
+                    <i class="fas fa-user-shield"></i> Admin
+                </button>
+                <button id="cart-btn" class="relative group p-2">
+                    <i class="fas fa-shopping-cart text-xl group-hover:text-neon-blue transition-colors"></i>
+                    <span id="cart-count" class="absolute -top-1 -right-1 bg-neon-blue text-dark text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-dark">0</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="pt-40 pb-24 px-4 overflow-hidden relative">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(0,243,255,0.05)_0%,transparent_70%)] pointer-events-none"></div>
+        <div class="container mx-auto text-center relative z-10">
+            <h1 class="text-6xl md:text-8xl font-black mb-6 tracking-tighter leading-none animate-fade-in">Trabajo <span class="text-neon-blue italic">Digital</span></h1>
+            <p class="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-12 animate-fade-in" style="animation-delay: 0.1s">
+                Software profesional, plataformas de streaming y licencias originales con entrega instantánea. El futuro de tu entretenimiento y productividad.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="#catalogo" class="px-8 py-4 bg-neon-blue text-dark font-bold rounded-xl shadow-neon-blue hover:scale-105 transition-transform">Explorar Catálogo</a>
+                <a href="#" class="px-8 py-4 bg-white/5 border border-white/10 font-bold rounded-xl hover:bg-white/10 transition-all">Soporte Técnico</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Product Grid Section -->
+    <section id="catalogo" class="container mx-auto px-4 py-16">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+            <div>
+                <h2 id="catalog-title" class="text-3xl font-bold mb-2">Software <span class="text-neon-blue">Destacado</span></h2>
+                <p id="catalog-desc" class="text-gray-500">Seleccionamos las mejores herramientas para ti.</p>
+            </div>
+            <div id="filter-buttons" class="flex flex-wrap gap-2 bg-dark-card p-1 rounded-xl border border-white/5">
+                <!-- Filters injected by JS -->
+            </div>
+        </div>
+
+        <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <!-- Products injected here -->
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark-card border-t border-white/5 pt-20 pb-10">
+        <div class="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-12 mb-20">
+            <div class="col-span-1 md:col-span-2">
+                <div class="flex items-center gap-2 mb-6">
+                    <div class="w-8 h-8 bg-neon-blue rounded-lg flex items-center justify-center shadow-neon-blue"><i class="fas fa-code text-dark text-xs"></i></div>
+                    <span class="text-xl font-black uppercase tracking-tighter italic">Soft<span class="text-neon-blue">Win</span></span>
+                </div>
+                <p class="text-gray-500 max-w-sm mb-8">Líderes en distribución de licencias digitales originales para profesionales y entretenimiento familiar. Soporte 24/7.</p>
+                <div class="flex gap-4">
+                    <a href="#" class="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-neon-blue hover:text-dark transition-all"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-neon-blue hover:text-dark transition-all"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-neon-blue hover:text-dark transition-all"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+            <div>
+                <h4 class="font-bold mb-6">Navegación</h4>
+                <ul class="space-y-4 text-gray-400">
+                    <li><button onclick="switchCatalog('software')" class="hover:text-neon-blue">Software</button></li>
+                    <li><button onclick="switchCatalog('streaming')" class="hover:text-neon-blue">Streaming</button></li>
+                    <li><a href="#" class="hover:text-neon-blue">Ofertas</a></li>
+                    <li><a href="#" class="hover:text-neon-blue">Preguntas Frecuentes</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold mb-6">Legal</h4>
+                <ul class="space-y-4 text-gray-400">
+                    <li><a href="#" class="hover:text-neon-blue">Términos de Servicio</a></li>
+                    <li><a href="#" class="hover:text-neon-blue">Privacidad</a></li>
+                    <li><a href="#" class="hover:text-neon-blue">Reembolsos</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="container mx-auto px-4 text-center text-gray-600 text-xs border-t border-white/5 pt-8">
+            &copy; 2026 SoftWin Store. Todos los derechos reservados.
+        </div>
+    </footer>
+
+    <!-- Cart Sidebar -->
+    <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full max-w-md bg-dark-card shadow-2xl z-[60] transform translate-x-full transition-transform duration-300 border-l border-white/10 flex flex-col">
+        <div class="p-6 flex justify-between items-center border-b border-white/5">
+            <h3 class="text-xl font-bold">Tu Carrito</h3>
+            <button id="close-cart" class="p-2 hover:bg-white/5 rounded-full"><i class="fas fa-times text-xl"></i></button>
+        </div>
+        <div id="cart-items" class="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+            <!-- Items injected here -->
+        </div>
+        <div id="empty-cart-msg" class="p-6 text-center text-gray-500 italic hidden">El carrito está vacío</div>
+        <div class="p-6 bg-dark/50 border-t border-white/5">
+            <div class="flex justify-between text-xl font-bold mb-6"><span>Total:</span> <span id="cart-total" class="text-neon-blue">$0.00</span></div>
+            <button id="checkout-btn" class="w-full py-4 bg-neon-blue text-dark font-bold rounded-xl shadow-neon-blue hover:scale-[1.02] transition-all disabled:opacity-50 disabled:pointer-events-none">Finalizar Pedido</button>
+        </div>
+    </div>
+
+    <!-- User Data Modal -->
+    <div id="user-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[70] hidden items-center justify-center p-4">
+        <div class="bg-dark-card border border-white/10 rounded-3xl w-full max-w-md p-8 shadow-2xl overflow-y-auto max-h-[95vh] custom-scrollbar">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-neon-blue/10 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-user-check text-neon-blue text-2xl"></i></div>
+                <h3 class="text-2xl font-bold">Datos de Compra</h3>
+                <p class="text-gray-500 text-sm">Completa tus datos para cerrar la venta</p>
+            </div>
+            <form id="user-form" class="space-y-6">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Nombre Completo</label>
+                    <input type="text" id="user-name" required placeholder="Ej. Juan Pérez" class="w-full bg-dark border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-neon-blue transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">WhatsApp / Celular</label>
+                    <input type="text" id="user-phone" required placeholder="Ej. +51 987 654 321" class="w-full bg-dark border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-neon-blue transition-all">
+                </div>
+                <div class="border-t border-white/10 pt-6">
+                    <p class="text-sm font-medium text-gray-400 mb-4">Selecciona Método de Pago</p>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="payment" value="Pago Movil 1" class="hidden peer" checked>
+                                <div class="p-3 border border-white/10 rounded-xl flex flex-col items-center gap-2 peer-checked:border-neon-blue peer-checked:bg-neon-blue/5">
+                                    <i class="fas fa-mobile-alt"></i><span class="text-[10px]">Pago Móvil 1</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="payment" value="Pago Movil 2" class="hidden peer">
+                                <div class="p-3 border border-white/10 rounded-xl flex flex-col items-center gap-2 peer-checked:border-neon-blue peer-checked:bg-neon-blue/5">
+                                    <i class="fas fa-mobile-alt"></i><span class="text-[10px]">Pago Móvil 2</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="payment" value="PayPal" class="hidden peer">
+                                <div class="p-3 border border-white/10 rounded-xl flex flex-col items-center gap-2 peer-checked:border-neon-blue peer-checked:bg-neon-blue/5">
+                                    <i class="fab fa-paypal"></i><span class="text-[10px]">PayPal</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="payment" value="Binance" class="hidden peer">
+                                <div class="p-3 border border-white/10 rounded-xl flex flex-col items-center gap-2 peer-checked:border-neon-blue peer-checked:bg-neon-blue/5">
+                                    <i class="fas fa-coins"></i><span class="text-[10px]">Binance</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="payment" value="Airtm" class="hidden peer">
+                                <div class="p-3 border border-white/10 rounded-xl flex flex-col items-center gap-2 peer-checked:border-neon-blue peer-checked:bg-neon-blue/5">
+                                    <i class="fas fa-cloud"></i><span class="text-[10px]">Airtm</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="payment" value="Internacional" class="hidden peer">
+                                <div class="p-3 border border-white/10 rounded-xl flex flex-col items-center gap-2 peer-checked:border-neon-blue peer-checked:bg-neon-blue/5">
+                                    <i class="fas fa-globe"></i><span class="text-[10px]">Inter.</span>
+                                </div>
+                            </label>
+                        </div>
+                    <div id="selected-payment-details" class="bg-neon-blue/5 border border-neon-blue/10 rounded-2xl p-4 mb-6">
+                        <div class="flex items-center gap-3 mb-2"><i id="pay-icon" class="text-neon-blue"></i><span id="pay-title" class="font-bold text-sm"></span></div>
+                        <div id="pay-info-container" class="space-y-1"></div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-xs font-medium text-gray-500">Adjuntar Comprobante (Opcional)</label>
+                        <input type="file" id="checkout-screenshot" accept=".png, .jpg, .jpeg, .ico" class="hidden">
+                        <button type="button" onclick="document.getElementById('checkout-screenshot').click()" class="w-full py-3 bg-white/5 border border-dashed border-white/20 rounded-xl text-xs flex items-center justify-center gap-2 hover:border-neon-blue">
+                            <i class="fas fa-camera"></i> <span id="screenshot-name">Subir Captura</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex gap-4 pt-6">
+                    <button type="button" id="cancel-modal" class="flex-1 py-4 bg-white/5 border border-white/10 rounded-xl font-bold">Cancelar</button>
+                    <button type="submit" class="flex-[2] py-4 bg-neon-blue text-dark font-bold rounded-xl shadow-neon-blue">Confirmar Pedido</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Security -->
+    <div id="admin-login-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[100] hidden items-center justify-center p-4">
+        <div class="bg-dark-card border border-white/10 rounded-3xl w-full max-w-sm p-8 shadow-2xl text-center">
+            <i class="fas fa-user-shield text-4xl text-neon-blue mb-6"></i>
+            <h3 id="admin-auth-title" class="text-xl font-bold mb-2">Acceso Admin</h3>
+            <p id="admin-auth-desc" class="text-sm text-gray-500 mb-6">Ingresa tu clave de seguridad</p>
+            <input type="password" id="admin-pass-input" class="w-full bg-dark border border-white/10 rounded-xl px-4 py-3 text-center text-xl mb-4 outline-none focus:border-neon-blue">
+            <button id="admin-auth-btn" class="w-full py-4 bg-neon-blue text-dark font-bold rounded-xl shadow-neon-blue mb-4">Ingresar</button>
+            <button id="close-admin-auth" class="text-xs text-gray-500">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="admin-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[80] hidden items-center justify-center p-4">
+        <div class="bg-dark-card border border-white/10 rounded-3xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
+            <div class="p-6 border-b border-white/5 flex justify-between items-center bg-dark/50">
+                <div class="flex items-center gap-4">
+                    <h3 class="text-xl font-bold">Administración</h3>
+                    <div class="flex gap-2">
+                        <button onclick="clearImageCache()" title="Optimizar Espacio" class="w-8 h-8 flex items-center justify-center bg-white/5 hover:bg-neon-blue/20 rounded-lg text-gray-400 hover:text-neon-blue transition-all"><i class="fas fa-broom text-xs"></i></button>
+                        <button onclick="exportData()" title="Respaldar Datos" class="w-8 h-8 flex items-center justify-center bg-white/5 hover:bg-neon-green/20 rounded-lg text-gray-400 hover:text-neon-green transition-all"><i class="fas fa-download text-xs"></i></button>
+                    </div>
+                </div>
+                <button id="close-admin" class="p-2 hover:bg-white/5 rounded-full"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="flex gap-4 p-6 border-b border-white/5">
+                <button id="tab-inventory" class="pb-2 border-b-2 border-neon-blue text-neon-blue font-bold">Inventario</button>
+                <button id="tab-payments" class="pb-2 border-b-2 border-transparent text-gray-500">Pagos</button>
+                <button id="tab-sales" class="pb-2 border-b-2 border-transparent text-gray-500">Ventas</button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-6 custom-scrollbar">
+                <div id="view-inventory" class="space-y-8">
+                    <!-- Excel Bulk Load -->
+                    <div class="bg-white/5 p-6 rounded-2xl border border-white/5">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="font-bold text-sm uppercase tracking-widest text-gray-400">Carga Masiva (Excel)</h4>
+                            <a href="#" class="text-[10px] text-neon-blue hover:underline">Descargar Plantilla</a>
+                        </div>
+                        <div class="flex gap-4">
+                            <input type="file" id="excel-input" accept=".xlsx, .xls" class="hidden">
+                            <button onclick="document.getElementById('excel-input').click()" class="flex-1 py-3 bg-dark border border-dashed border-white/20 rounded-xl text-xs flex items-center justify-center gap-2 hover:border-neon-blue transition-all">
+                                <i class="fas fa-file-excel text-green-500"></i> Seleccionar Archivo Excel
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="h-px bg-white/5"></div>
+
+                    <h4 class="font-bold text-sm uppercase tracking-widest text-gray-400 px-2">Carga Manual</h4>
+                    <form id="admin-form" class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white/5 p-6 rounded-2xl border border-white/5">
+                        <input type="hidden" id="edit-id">
+                        <div>
+                            <label class="block text-xs mb-1">Tipo</label>
+                            <select id="admin-type" onchange="updateAdminCategories()" class="w-full bg-dark border border-white/10 rounded-lg p-2 text-sm">
+                                <option value="software">Software</option>
+                                <option value="streaming">Streaming</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs mb-1">Categoría</label>
+                            <select id="admin-category" class="w-full bg-dark border border-white/10 rounded-lg p-2 text-sm"></select>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs mb-1">Nombre</label>
+                            <input type="text" id="admin-name" required class="w-full bg-dark border border-white/10 rounded-lg p-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs mb-1">Precio ($)</label>
+                            <input type="number" step="0.01" id="admin-price" required class="w-full bg-dark border border-white/10 rounded-lg p-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs mb-1">Imagen (URL)</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="admin-image" class="flex-1 bg-dark border border-white/10 rounded-lg p-2 text-sm">
+                                <input type="file" id="admin-image-file" accept=".png, .jpg, .jpeg, .ico" class="hidden">
+                                <button type="button" onclick="document.getElementById('admin-image-file').click()" class="px-3 bg-white/10 rounded-lg"><i class="fas fa-upload"></i></button>
+                            </div>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs mb-1">Descripción</label>
+                            <textarea id="admin-desc" class="w-full bg-dark border border-white/10 rounded-lg p-2 text-sm h-20"></textarea>
+                        </div>
+                        <div class="md:col-span-2 flex items-center gap-2 mb-2">
+                            <input type="checkbox" id="admin-is-offer" class="w-4 h-4 accent-neon-blue">
+                            <label for="admin-is-offer" class="text-xs font-bold text-neon-blue uppercase">Marcar como Oferta Especial</label>
+                        </div>
+                        <div class="md:col-span-2 flex gap-3">
+                            <button type="submit" id="admin-submit-btn" class="flex-1 py-3 bg-neon-blue text-dark font-bold rounded-xl">Guardar Producto</button>
+                            <button type="button" id="cancel-edit" class="hidden px-6 bg-white/5 rounded-xl">Cancelar</button>
+                        </div>
+                    </form>
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-gray-500 uppercase text-[10px] tracking-widest bg-white/5">
+                            <tr><th class="p-4">Vista</th><th class="p-4">Producto</th><th class="p-4">Precio</th><th class="p-4 text-right">Acción</th></tr>
+                        </thead>
+                        <tbody id="admin-inventory-list" class="divide-y divide-white/5"></tbody>
+                    </table>
+                </div>
+                <div id="view-payments" class="hidden space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white/5 p-4 rounded-xl space-y-2 border border-white/5">
+                            <h4 class="font-bold text-neon-blue text-xs uppercase">Pago Móvil 1</h4>
+                            <input id="pay-pm1-titular" placeholder="Titular" value="Antonio Jose Caceres Acosta" class="w-full bg-dark border border-white/10 p-2 text-sm rounded outline-none focus:border-neon-blue">
+                            <input id="pay-pm1-banco" placeholder="Banco" class="w-full bg-dark border border-white/10 p-2 text-sm rounded outline-none focus:border-neon-blue">
+                            <input id="pay-pm1-cedula" placeholder="Cédula" class="w-full bg-dark border border-white/10 p-2 text-sm rounded outline-none focus:border-neon-blue">
+                            <input id="pay-pm1-celular" placeholder="Número" class="w-full bg-dark border border-white/10 p-2 text-sm rounded outline-none focus:border-neon-blue">
+                        </div>
+                        <div class="bg-white/5 p-4 rounded-xl space-y-2 border border-white/5">
+                            <h4 class="font-bold text-neon-blue text-xs uppercase">Pago Móvil 2</h4>
+                            <input id="pay-pm2-titular" placeholder="Titular" value="Antonio Jose Caceres Acosta" class="w-full bg-dark border border-white/10 p-2 text-sm rounded outline-none focus:border-neon-blue">
+                            <input id="pay-pm2-banco" placeholder="Banco" class="w-full bg-dark border border-white/10 p-2 text-sm rounded outline-none focus:border-neon-blue">
+                            <input id="pay-pm2-cedula" placeholder="Cédula" class="w-full bg-dark border border-white/10 p-2 text-sm rounded outline-none focus:border-neon-blue">
+                            <input id="pay-pm2-celular" placeholder="Número" class="w-full bg-dark border border-white/10 p-2 text-sm rounded outline-none focus:border-neon-blue">
+                        </div>
+                        <div class="bg-white/5 p-4 rounded-xl space-y-2 border border-white/5">
+                            <h4 class="font-bold text-yellow-400 text-xs uppercase">Binance Pay</h4>
+                            <input id="pay-binance-titular" placeholder="Titular" value="Antonio Jose Caceres Acosta" class="w-full bg-dark border border-white/10 p-2 text-sm rounded outline-none focus:border-neon-blue">
+                            <input id="pay-binance-id" placeholder="Binance ID" class="w-full bg-dark border border-white/10 p-2 text-sm rounded outline-none focus:border-neon-blue">
+                        </div>
+                        <div class="bg-white/5 p-4 rounded-xl space-y-2 border border-white/5">
+                            <h4 class="font-bold text-blue-400 text-xs uppercase">PayPal</h4>
+                            <input id="pay-paypal-titular" placeholder="Titular" value="Antonio Jose Caceres Acosta" class="w-full bg-dark border border-white/10 p-2 text-sm rounded outline-none focus:border-neon-blue">
+                            <input id="pay-paypal-email" placeholder="Correo PayPal" class="w-full bg-dark border border-white/10 p-2 text-sm rounded outline-none focus:border-neon-blue">
+                        </div>
+                        <div class="bg-white/5 p-4 rounded-xl space-y-2 border border-white/5">
+                            <h4 class="font-bold text-neon-green text-xs uppercase">Airtm</h4>
+                            <input id="pay-airtm-titular" placeholder="Titular" value="Antonio Jose Caceres Acosta" class="w-full bg-dark border border-white/10 p-2 text-sm rounded outline-none focus:border-neon-blue">
+                            <input id="pay-airtm-email" placeholder="Correo Airtm" class="w-full bg-dark border border-white/10 p-2 text-sm rounded outline-none focus:border-neon-blue">
+                        </div>
+                        <div class="bg-white/5 p-4 rounded-xl space-y-2 border border-white/5">
+                            <h4 class="font-bold text-purple-400 text-xs uppercase">Cta. Internacional</h4>
+                            <input id="pay-intl-titular" placeholder="Titular" value="Antonio Jose Caceres Acosta" class="w-full bg-dark border border-white/10 p-2 text-sm rounded outline-none focus:border-neon-blue">
+                            <input id="pay-intl-banco" placeholder="Banco" class="w-full bg-dark border border-white/10 p-2 text-sm rounded outline-none focus:border-neon-blue">
+                            <input id="pay-intl-cuenta" placeholder="Nro. Cuenta" class="w-full bg-dark border border-white/10 p-2 text-sm rounded outline-none focus:border-neon-blue">
+                            <input id="pay-intl-doc" placeholder="Documento / SWIFT" class="w-full bg-dark border border-white/10 p-2 text-sm rounded outline-none focus:border-neon-blue">
+                        </div>
+                    </div>
+                    <button id="save-payments-btn" class="w-full py-4 bg-neon-blue text-dark font-bold rounded-xl shadow-neon-blue">Guardar Cambios</button>
+                </div>
+                <div id="view-sales" class="hidden space-y-4">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-gray-500 uppercase text-[10px] bg-white/5">
+                            <tr><th class="p-4">Orden</th><th class="p-4">Cliente</th><th class="p-4">Monto</th><th class="p-4">Estado</th></tr>
+                        </thead>
+                        <tbody id="admin-sales-list" class="divide-y divide-white/5"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Detail Modal -->
+    <div id="order-detail-modal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[90] hidden items-center justify-center p-4">
+        <div class="bg-dark-card border border-white/10 rounded-3xl w-full max-w-2xl p-8 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold">Orden <span id="detail-order-id" class="text-neon-blue"></span></h3>
+                <button onclick="document.getElementById('order-detail-modal').classList.add('hidden')" class="p-2 hover:bg-white/5 rounded-full"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="order-detail-content" class="space-y-6"></div>
+            <div class="mt-8 pt-8 border-t border-white/5 space-y-4">
+                <h4 class="text-xs uppercase font-bold text-gray-500">Actualizar Estado</h4>
+                <div class="flex gap-4">
+                    <select id="update-status-select" class="flex-1 bg-dark border border-white/10 rounded-xl p-3 text-sm outline-none focus:border-neon-blue">
+                        <option value="Por Pagar">Por Pagar</option>
+                        <option value="Pago Reportado">Pago Reportado</option>
+                        <option value="Verificar Pago">Verificar Pago</option>
+                        <option value="Envio de Compra">Envío de Compra</option>
+                        <option value="Venta Cerrada">Venta Cerrada</option>
+                    </select>
+                    <button id="update-status-btn" class="bg-neon-blue text-dark font-bold px-6 rounded-xl text-sm transition-transform active:scale-95">Actualizar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay -->
+    <div id="overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
