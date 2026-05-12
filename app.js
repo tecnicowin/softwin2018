@@ -291,20 +291,72 @@ function renderInventory() {
     const list = document.getElementById('admin-inventory-list'); if(!list) return;
     list.innerHTML = products.map(p => `
         <tr class="hover:bg-white/5 border-b border-white/5 transition-colors">
-            <td class="p-4"><img src="${p.image}" class="w-10 h-10 object-contain bg-dark rounded p-1"></td>
+            <td class="p-4"><input type="checkbox" class="product-select accent-neon-blue" data-id="${p.id}"></td>
+            <td class="p-4"><img src="${p.image}" class="w-10 h-10 object-contain bg-dark rounded p-1" onerror="this.src='https://via.placeholder.com/50?text=Error'"></td>
             <td class="p-4 font-bold text-sm">${p.name}<div class="text-[9px] text-gray-500 uppercase">${p.type} | ${p.category} ${p.isOffer?'| PROMO':''}</div></td>
-            <td class="p-4 text-neon-blue font-bold">$${parseFloat(p.price).toFixed(2)}</td>
+            <td class="p-4 text-neon-blue font-bold">$${(parseFloat(p.price) || 0).toFixed(2)}</td>
             <td class="p-4 text-right">
-                <button id="edit-${p.id}" class="p-2 text-gray-400 hover:text-neon-blue transition-colors"><i class="fas fa-edit"></i></button>
-                <button id="del-${p.id}" class="p-2 text-gray-400 hover:text-red-500 transition-colors"><i class="fas fa-trash"></i></button>
+                <div class="flex justify-end gap-2">
+                    <button id="edit-${p.id}" class="p-2 text-gray-400 hover:text-neon-blue transition-colors" title="Editar"><i class="fas fa-edit"></i></button>
+                    <button id="del-${p.id}" class="p-2 text-gray-400 hover:text-red-500 transition-colors" title="Eliminar"><i class="fas fa-trash"></i></button>
+                </div>
             </td>
         </tr>
     `).join('');
+    
     products.forEach(p => {
-        document.getElementById(`edit-${p.id}`).onclick = () => window.editProduct(p.id);
-        document.getElementById(`del-${p.id}`).onclick = () => window.deleteProduct(p.id);
+        const editBtn = document.getElementById(`edit-${p.id}`);
+        const delBtn = document.getElementById(`del-${p.id}`);
+        if(editBtn) editBtn.onclick = () => window.editProduct(p.id);
+        if(delBtn) delBtn.onclick = () => window.deleteProduct(p.id);
     });
+
+    // Selection listeners
+    const checkboxes = document.querySelectorAll('.product-select');
+    checkboxes.forEach(cb => {
+        cb.onchange = updateBulkActionsUI;
+    });
+
+    const selectAll = document.getElementById('select-all-inventory');
+    if(selectAll) {
+        selectAll.checked = false;
+        selectAll.onchange = (e) => {
+            checkboxes.forEach(cb => cb.checked = e.target.checked);
+            updateBulkActionsUI();
+        };
+    }
+    updateBulkActionsUI();
 }
+
+function updateBulkActionsUI() {
+    const selected = document.querySelectorAll('.product-select:checked');
+    const bar = document.getElementById('bulk-actions');
+    const count = document.getElementById('selected-count');
+    if(!bar || !count) return;
+
+    if(selected.length > 0) {
+        bar.classList.remove('hidden');
+        count.textContent = `${selected.length} productos seleccionados`;
+    } else {
+        bar.classList.add('hidden');
+    }
+}
+
+window.bulkDelete = async () => {
+    const selected = Array.from(document.querySelectorAll('.product-select:checked')).map(cb => cb.getAttribute('data-id'));
+    if(selected.length === 0) return;
+
+    if(confirm(`¿Estás seguro de que deseas eliminar permanentemente estos ${selected.length} productos del servidor?`)) {
+        Notify.info("Eliminando productos...");
+        for(const id of selected) {
+            await DB.delete('products', id);
+        }
+        await loadAllData();
+        renderInventory();
+        renderProducts();
+        Notify.success("Eliminación masiva completada");
+    }
+};
 
 // 7. Lifecycle
 async function init() {

@@ -321,9 +321,19 @@
                             <button type="button" id="cancel-edit" class="hidden px-6 bg-white/5 rounded-xl">Cancelar</button>
                         </div>
                     </form>
+                    <div id="bulk-actions" class="hidden flex justify-between items-center bg-red-500/10 border border-red-500/20 p-4 rounded-xl mb-4">
+                        <span id="selected-count" class="text-xs font-bold text-red-500">0 productos seleccionados</span>
+                        <button onclick="bulkDelete()" class="px-4 py-2 bg-red-500 text-white text-xs font-bold rounded-lg hover:bg-red-600 transition-all">Eliminar Seleccionados</button>
+                    </div>
                     <table class="w-full text-sm text-left">
                         <thead class="text-gray-500 uppercase text-[10px] tracking-widest bg-white/5">
-                            <tr><th class="p-4">Vista</th><th class="p-4">Producto</th><th class="p-4">Precio</th><th class="p-4 text-right">Acción</th></tr>
+                            <tr>
+                                <th class="p-4 w-10"><input type="checkbox" id="select-all-inventory" class="accent-neon-blue"></th>
+                                <th class="p-4">Vista</th>
+                                <th class="p-4">Producto</th>
+                                <th class="p-4">Precio</th>
+                                <th class="p-4 text-right">Acción</th>
+                            </tr>
                         </thead>
                         <tbody id="admin-inventory-list" class="divide-y divide-white/5"></tbody>
                     </table>
