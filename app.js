@@ -486,20 +486,60 @@ function renderSales() {
 
 function handleExcelImport(e) {
     const f = e.target.files[0]; if(!f) return;
+    
+    if (typeof XLSX === 'undefined') {
+        Notify.error("Librería de Excel no cargada. Verifica tu conexión.");
+        console.error("XLSX library is not defined. Check the script tag in index.html");
+        return;
+    }
+
+    Notify.info("Procesando archivo...");
     const r = new FileReader();
     r.onload = async (ev) => {
         try {
-            const d = new Uint8Array(ev.target.result); const wb = XLSX.read(d, {type:'array'});
+            const d = new Uint8Array(ev.target.result); 
+            const wb = XLSX.read(d, {type:'array'});
             const json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+            
+            console.log(`Procesando ${json.length} filas del Excel...`);
+            let importedCount = 0;
+
             for(const row of json) {
-                const fv = (ks) => { const fk = Object.keys(row).find(k => ks.some(key => k.toLowerCase().trim() === key.toLowerCase())); return fk ? row[fk] : ''; };
-                const id = (Date.now() + Math.random()).toString();
-                const p = { type: window.currentCatalog, name: fv(['Nombre', 'Name', 'Producto']) || 'Sin Nombre', category: fv(['Categoria', 'Category']) || 'Varios', price: parseFloat(String(fv(['Precio', 'Price', 'Costo'])).replace(/[^0-9.]/g, '')) || 0, image: fv(['Imagen', 'Image', 'URL']), description: fv(['Descripcion', 'Description']), isOffer: false };
-                if(p.name !== 'Sin Nombre') await DB.save('products', id, p);
+                const fv = (ks) => { 
+                    const fk = Object.keys(row).find(k => ks.some(key => k.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === key.toLowerCase())); 
+                    return fk ? row[fk] : ''; 
+                };
+
+                const name = fv(['Nombre', 'Name', 'Producto', 'Item']);
+                if(!name || name.toString().trim() === '') continue;
+
+                const id = (Date.now() + Math.random()).toString().replace('.', '');
+                const rawPrice = String(fv(['Precio', 'Price', 'Costo', 'Monto'])).replace(/[^0-9.]/g, '');
+                
+                const p = { 
+                    type: window.currentCatalog || 'software', 
+                    name: name.toString().trim(), 
+                    category: fv(['Categoria', 'Category', 'Clase', 'Tipo']) || 'Varios', 
+                    price: parseFloat(rawPrice) || 0, 
+                    image: fv(['Imagen', 'Image', 'URL', 'Link']) || '', 
+                    description: fv(['Descripcion', 'Description', 'Detalle']) || '', 
+                    isOffer: false 
+                };
+
+                await DB.save('products', id, p);
+                importedCount++;
             }
+            
             await loadAllData();
-            Notify.success("Carga masiva completada");
-        } catch(err) { Notify.error("Error al procesar Excel"); }
+            renderProducts();
+            renderInventory();
+            Notify.success(`¡Éxito! ${importedCount} productos cargados.`);
+            console.log(`Carga masiva finalizada. ${importedCount} productos importados.`);
+            e.target.value = ''; // Reset input
+        } catch(err) { 
+            console.error("Excel Processing Error:", err);
+            Notify.error("Error al procesar el archivo Excel"); 
+        }
     };
     r.readAsArrayBuffer(f);
 }
