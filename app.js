@@ -580,6 +580,7 @@ async function handlePaymentSave() {
     await DB.save('settings', 'payments', paymentSettings);
     Notify.success("Formas de pago actualizadas en servidor");
 }
+window.handlePaymentSave = handlePaymentSave;
 
 async function handleStatusUpdate() {
     if(!currentViewOrderId) return;
