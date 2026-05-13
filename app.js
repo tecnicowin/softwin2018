@@ -49,16 +49,10 @@ function toggleModal(id, show) {
     } else {
         if (show) {
             el.classList.remove('hidden');
-            el.classList.add('flex', 'modal-visible');
-            el.classList.remove('modal-hidden');
+            el.classList.add('flex');
         } else {
-            el.classList.add('modal-hidden');
-            el.classList.remove('modal-visible', 'flex');
-            setTimeout(() => { 
-                if(el.classList.contains('modal-hidden')) {
-                    el.classList.add('hidden');
-                }
-            }, 300);
+            el.classList.add('hidden');
+            el.classList.remove('flex');
         }
     }
     if (ov) ov.classList.toggle('hidden', !show);
@@ -69,16 +63,17 @@ function toggleModal(id, show) {
         const submitBtn = document.getElementById('checkout-submit-btn');
         if(submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "Confirmar Pedido"; }
         
-        // Ensure default payment info is shown
         const selectedPay = document.querySelector('input[name="payment"]:checked');
         if(selectedPay) updatePaymentInfo(selectedPay.value);
     }
 }
+window.toggleModal = toggleModal;
 
 function closeEverything() {
     ['admin-modal', 'admin-login-modal', 'user-modal', 'order-detail-modal'].forEach(id => toggleModal(id, false));
     toggleModal('cart-sidebar', false);
 }
+window.closeEverything = closeEverything;
 
 // 3. Database Layer (Firestore)
 const DB = {
