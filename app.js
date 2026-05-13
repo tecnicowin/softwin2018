@@ -53,8 +53,12 @@ function toggleModal(id, show) {
             el.classList.remove('modal-hidden');
         } else {
             el.classList.add('modal-hidden');
-            el.classList.remove('modal-visible');
-            setTimeout(() => { if(el.classList.contains('modal-hidden')) el.classList.add('hidden'); }, 300);
+            el.classList.remove('modal-visible', 'flex');
+            setTimeout(() => { 
+                if(el.classList.contains('modal-hidden')) {
+                    el.classList.add('hidden');
+                }
+            }, 300);
         }
     }
     if (ov) ov.classList.toggle('hidden', !show);
@@ -424,6 +428,7 @@ function attachGlobalListeners() {
     bind('save-payments-btn', 'onclick', handlePaymentSave);
     bind('update-status-btn', 'onclick', handleStatusUpdate);
     bind('cancel-edit', 'onclick', resetAdminForm);
+    bind('overlay', 'onclick', closeEverything);
     
     bind('excel-input', 'onchange', handleExcelImport);
     bind('admin-image-file', 'onchange', (e) => handleImageFile(e, 'tempLocalImage'));
