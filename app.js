@@ -114,14 +114,14 @@ const DB = {
         }
     },
     async uploadImage(path, base64) {
-        if (!base64 || !base64.startsWith('data:')) return base64;
+        if (!base64 || !base64.startsWith('data:')) return "";
         try {
             const storageRef = ref(storage, path);
             await uploadString(storageRef, base64, 'data_url');
             return await getDownloadURL(storageRef);
         } catch (e) {
-            console.error("Error uploading image", e);
-            return base64;
+            console.error("Error uploading image to storage", e);
+            return ""; // No fallback to base64 to avoid Firestore size limits
         }
     }
 };
@@ -253,12 +253,13 @@ async function handleCheckoutSubmit(e) {
         
         cart = []; 
         localStorage.removeItem('softwin_cart');
+        tempCheckoutScreenshot = ""; // Clear screenshot
         updateCartUI(); 
         Notify.success(`¡Orden #${oid} enviada!`);
         isLoading = false;
     } catch (error) {
-        console.error(error);
-        Notify.error("Error al procesar el pedido");
+        console.error("Checkout Error:", error);
+        Notify.error("Error al procesar el pedido. Intenta de nuevo.");
         if(submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "Confirmar Pedido"; }
         isLoading = false;
     }
