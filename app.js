@@ -131,6 +131,7 @@ let tempLocalImage = "";
 let tempCheckoutScreenshot = ""; 
 let currentViewOrderId = null;
 let isLoading = false;
+window.currentCurrency = localStorage.getItem('softwin_currency') || 'USD';
 
 let paymentSettings = {
     bcv: 36.50,
@@ -301,6 +302,39 @@ window.switchCatalog = (type) => {
     renderProducts();
 };
 
+window.setCurrency = (cur) => {
+    window.currentCurrency = cur;
+    localStorage.setItem('softwin_currency', cur);
+    
+    // Update UI buttons
+    const btnUsd = document.getElementById('btn-currency-usd');
+    const btnBs = document.getElementById('btn-currency-bs');
+    
+    if(cur === 'USD') {
+        btnUsd?.classList.add('bg-neon-blue', 'text-dark');
+        btnUsd?.classList.remove('text-gray-400', 'hover:text-white');
+        btnBs?.classList.remove('bg-neon-blue', 'text-dark');
+        btnBs?.classList.add('text-gray-400', 'hover:text-white');
+    } else {
+        btnBs?.classList.add('bg-neon-blue', 'text-dark');
+        btnBs?.classList.remove('text-gray-400', 'hover:text-white');
+        btnUsd?.classList.remove('bg-neon-blue', 'text-dark');
+        btnUsd?.classList.add('text-gray-400', 'hover:text-white');
+    }
+    
+    renderProducts();
+    updateCartUI();
+    Notify.info(`Moneda cambiada a ${cur}`);
+};
+
+function formatPrice(usdAmount) {
+    if (window.currentCurrency === 'BS') {
+        const bsAmount = usdAmount * (paymentSettings.bcv || 1);
+        return `${bsAmount.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Bs`;
+    }
+    return `$${usdAmount.toFixed(2)}`;
+}
+
 function renderProducts(f = null) {
     const grid = document.getElementById('products-grid'); if(!grid) return;
     let its = f || (window.currentCatalog === 'ofertas' ? products.filter(p => p.isOffer) : products.filter(p => p.type === window.currentCatalog));
@@ -322,7 +356,7 @@ function renderProducts(f = null) {
             <h3 class="text-xl font-bold mb-2 group-hover:text-neon-blue transition-colors">${p.name}</h3>
             <p class="text-gray-500 text-sm mb-6 flex-1">${p.description || ""}</p>
             <div class="flex items-center justify-between mt-auto">
-                <span class="text-2xl font-black">$${price.toFixed(2)}</span>
+                <span class="text-2xl font-black">${formatPrice(price)}</span>
                 <button class="add-to-cart-btn w-10 h-10 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center hover:bg-neon-blue hover:text-dark transition-all" data-id="${p.id}">
                     <i class="fas fa-plus"></i>
                 </button>
@@ -411,6 +445,7 @@ async function init() {
     attachGlobalListeners();
     updateCartUI();
     window.switchCatalog('software');
+    window.setCurrency(window.currentCurrency);
     loadPaymentSettingsIntoForm();
     setupPaymentSwitching();
 }
@@ -531,12 +566,16 @@ window.requestAdminAccess = () => { toggleModal('admin-login-modal', true); docu
 function updateCartUI() {
     const count = document.getElementById('cart-count'); if(count) count.textContent = cart.reduce((a,b)=>a+b.quantity,0);
     const container = document.getElementById('cart-items'); if(!container) return;
-    container.innerHTML = cart.length === 0 ? '<div class="text-center py-10 text-gray-500">Vacío</div>' : cart.map(i => `<div class="flex gap-4 bg-white/5 p-4 rounded-xl border border-white/5"><img src="${i.image}" class="w-10 h-10 object-contain"><div class="flex-1"><h4 class="text-xs font-bold">${i.name}</h4><div class="flex items-center gap-3 mt-1"><button id="q-min-${i.id}">-</button><span>${i.quantity}</span><button id="q-pls-${i.id}">+</button></div></div><div class="text-right text-neon-blue font-bold text-xs">$${(i.price*i.quantity).toFixed(2)}</div></div>`).join('');
+    container.innerHTML = cart.length === 0 ? '<div class="text-center py-10 text-gray-500">Vacío</div>' : cart.map(i => `<div class="flex gap-4 bg-white/5 p-4 rounded-xl border border-white/5"><img src="${i.image}" class="w-10 h-10 object-contain"><div class="flex-1"><h4 class="text-xs font-bold">${i.name}</h4><div class="flex items-center gap-3 mt-1"><button id="q-min-${i.id}">-</button><span>${i.quantity}</span><button id="q-pls-${i.id}">+</button></div></div><div class="text-right text-neon-blue font-bold text-xs">${formatPrice(i.price*i.quantity)}</div></div>`).join('');
     cart.forEach(i => {
         document.getElementById(`q-min-${i.id}`).onclick = () => window.updateQuantity(i.id, -1);
         document.getElementById(`q-pls-${i.id}`).onclick = () => window.updateQuantity(i.id, 1);
     });
-    const total = document.getElementById('cart-total'); if(total) total.textContent = `$${cart.reduce((a,b)=>a+(b.price*b.quantity),0).toFixed(2)}`;
+    const total = document.getElementById('cart-total'); 
+    if(total) {
+        const totalUSD = cart.reduce((a,b)=>a+(b.price*b.quantity),0);
+        total.textContent = formatPrice(totalUSD);
+    }
 }
 
 function handleAdminAuth() {

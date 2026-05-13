@@ -56,6 +56,12 @@
 
 
             <div class="flex items-center gap-6">
+                <!-- Currency Switcher -->
+                <div class="hidden sm:flex bg-white/5 p-1 rounded-xl border border-white/10 text-[10px] font-black tracking-widest">
+                    <button onclick="window.setCurrency('USD')" id="btn-currency-usd" class="px-3 py-1.5 rounded-lg transition-all bg-neon-blue text-dark">USD</button>
+                    <button onclick="window.setCurrency('BS')" id="btn-currency-bs" class="px-3 py-1.5 rounded-lg transition-all text-gray-400 hover:text-white">BS</button>
+                </div>
+
                 <button onclick="requestAdminAccess()" class="hidden md:flex items-center gap-2 text-gray-400 hover:text-neon-blue transition-colors text-sm font-medium">
                     <i class="fas fa-user-shield"></i> Admin
                 </button>

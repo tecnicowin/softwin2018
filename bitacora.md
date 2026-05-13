@@ -23,6 +23,12 @@
 - **Optimización de Modales:** Se corrigieron errores de visibilidad (clases CSS y scopes de funciones) para asegurar que las ventanas cierren instantáneamente.
 - **Normalización de Texto:** Se implementó lógica de comparación insensible a acentos y mayúsculas para la carga de datos de pago (ej. "Pago Móvil" vs "Pago Movil").
 
+## 💱 Sistema Multi-moneda (USD/Bs)
+- **Selector de Moneda:** Se añadió un interruptor en la navegación para alternar entre Dólares ($) y Bolívares (Bs).
+- **Conversión Dinámica:** Todos los precios del catálogo y del carrito se recalculan en tiempo real usando la tasa BCV configurada.
+- **Formateo Local:** Los montos en Bolívares utilizan el formato estándar `toLocaleString` para una lectura profesional.
+- **Persistencia:** La preferencia de moneda del usuario se guarda automáticamente en el navegador.
+
 ## 🛠️ Notas Técnicas para el Futuro
 - Las funciones de control de modales (`toggleModal`, `closeEverything`) y guardado (`handlePaymentSave`) ahora están expuestas en el objeto `window` para permitir su uso desde el HTML estático.
 - La configuración de pagos se guarda centralizada en la colección `settings/payments` de Firestore.
