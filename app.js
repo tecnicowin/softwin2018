@@ -138,10 +138,12 @@ let paymentSettings = {
     pm1: { titular: 'Antonio Jose Caceres Acosta', banco: '', cedula: '', celular: '' },
     pm2: { titular: 'Antonio Jose Caceres Acosta', banco: '', cedula: '', celular: '' },
     binance: { titular: 'Antonio Jose Caceres Acosta', id: '' },
-    paypal: { titular: 'Antonio Jose Caceres Acosta', email: 'tecnicoelectropc2017@gmail.com' },
+    paypal: { titular: 'Antonio Jose Caceres Acosta', email: 'tecnicoelectropc2017@gmail.com', clientid: '' },
     airtm: { titular: 'Antonio Jose Caceres Acosta', email: 'tecnicoelectropc2017@gmail.com' },
     intl: { titular: 'Antonio Jose Caceres Acosta', banco: '', cuenta: '', doc: '' }
 };
+
+let paypalButtonsLoaded = false;
 
 
 
@@ -720,7 +722,7 @@ function updatePaymentInfo(value) {
     if(val.includes('movil 1')) m = 'pm1'; 
     else if(val.includes('movil 2')) m = 'pm2'; 
     else if(val.includes('binance')) m = 'binance'; 
-    else if(val.includes('paypal')) m = 'paypal'; 
+    else if(val.includes('paypal') || val.includes('tarjeta')) m = 'paypal'; 
     else if(val.includes('airtm')) m = 'airtm'; 
     else if(val.includes('internacional') || val.includes('intl')) m = 'intl';
 
@@ -738,8 +740,20 @@ function updatePaymentInfo(value) {
                   </div>`;
         }
 
+        // Special UI for PayPal/Cards with SDK
+        if(m === 'paypal' && paymentSettings.paypal.clientid) {
+            const msg = val.includes('tarjeta') ? 'Paga con tu Tarjeta de Crédito o Débito:' : 'Paga de forma segura con PayPal:';
+            h += `<div class="mt-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                    <p class="text-[10px] text-blue-400 font-bold uppercase mb-3">${msg}</p>
+                    <div id="paypal-button-container"></div>
+                  </div>`;
+            
+            // Render buttons after DOM update
+            setTimeout(() => renderPayPalButtons(), 50);
+        }
+
         Object.keys(paymentSettings[m]).forEach(k => { 
-            if(k !== 'titular' && paymentSettings[m][k]) {
+            if(k !== 'titular' && k !== 'clientid' && paymentSettings[m][k]) {
                 const labels = { banco: 'Banco', cedula: 'Cédula', celular: 'Teléfono', email: 'Correo', id: 'ID Binance', cuenta: 'N° Cuenta', doc: 'Documento/SWIFT' };
                 const label = labels[k] || k.toUpperCase();
                 h += `<p class="text-xs text-gray-400 capitalize">${label}: ${paymentSettings[m][k]}</p>`; 
@@ -749,6 +763,64 @@ function updatePaymentInfo(value) {
     } else {
         if(inf) inf.innerHTML = '<p class="text-xs text-gray-500 italic">Información no disponible</p>';
     }
+}
+
+async function renderPayPalButtons() {
+    const container = document.getElementById('paypal-button-container');
+    if(!container || !paymentSettings.paypal.clientid) return;
+
+    if (!window.paypal) {
+        Notify.info("Cargando pasarela de pago...");
+        await loadPayPalSDK(paymentSettings.paypal.clientid);
+    }
+
+    if(window.paypal) {
+        const total = cart.reduce((a,b)=>a+(b.price*b.quantity),0).toFixed(2);
+        
+        // Clear previous buttons if any
+        container.innerHTML = "";
+        
+        window.paypal.Buttons({
+            createOrder: (data, actions) => {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: { value: total }
+                    }]
+                });
+            },
+            onApprove: (data, actions) => {
+                return actions.order.capture().then(details => {
+                    Notify.success(`¡Pago aprobado por ${details.payer.name.given_name}!`);
+                    // Fill form automatically for submission
+                    document.getElementById('user-ref').value = details.id;
+                    document.getElementById('user-amount').value = total;
+                    document.getElementById('user-bank').value = "PayPal / Tarjeta";
+                    document.getElementById('user-date').value = new Date().toISOString().split('T')[0];
+                    
+                    // Trigger submission
+                    document.getElementById('user-form').dispatchEvent(new Event('submit'));
+                });
+            },
+            onError: (err) => {
+                console.error("PayPal Error:", err);
+                Notify.error("Hubo un problema con la pasarela de PayPal");
+            }
+        }).render('#paypal-button-container');
+    }
+}
+
+function loadPayPalSDK(clientId) {
+    return new Promise((resolve, reject) => {
+        if (document.getElementById('paypal-sdk-script')) {
+            resolve(); return;
+        }
+        const script = document.createElement('script');
+        script.id = 'paypal-sdk-script';
+        script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD`;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
 }
 
 function setupPaymentSwitching() {

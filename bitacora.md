@@ -29,6 +29,12 @@
 - **Formateo Local:** Los montos en Bolívares utilizan el formato estándar `toLocaleString` para una lectura profesional.
 - **Persistencia:** La preferencia de moneda del usuario se guarda automáticamente en el navegador.
 
+## 💳 Integración de Pagos Automáticos (PayPal)
+- **Pasarela Real:** Se integró el SDK oficial de PayPal para permitir cobros reales con saldo PayPal y Tarjetas de Crédito/Débito.
+- **Configuración Admin:** El administrador ahora puede ingresar su `Client ID` directamente desde el panel para activar la pasarela.
+- **Automatización de Checkout:** Al completar un pago exitoso, el sistema captura automáticamente la referencia de PayPal y procesa el pedido sin intervención manual del cliente.
+- **Carga Dinámica:** El SDK de PayPal solo se carga cuando es necesario para optimizar el rendimiento de la aplicación.
+
 ## 🛠️ Notas Técnicas para el Futuro
 - Las funciones de control de modales (`toggleModal`, `closeEverything`) y guardado (`handlePaymentSave`) ahora están expuestas en el objeto `window` para permitir su uso desde el HTML estático.
 - La configuración de pagos se guarda centralizada en la colección `settings/payments` de Firestore.

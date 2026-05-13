@@ -209,9 +209,12 @@
                                 <span class="text-[8px] uppercase font-bold text-center">Airtm</span>
                             </label>
                             <label class="payment-option border border-white/10 rounded-xl p-3 flex flex-col items-center gap-1 cursor-pointer transition-all hover:bg-white/5 has-[:checked]:border-neon-blue has-[:checked]:bg-neon-blue/10">
-                                <input type="radio" name="payment" value="Internacional" class="hidden">
-                                <i class="fas fa-globe text-base"></i>
-                                <span class="text-[8px] uppercase font-bold text-center">Inter.</span>
+                                <input type="radio" name="payment" value="Tarjeta de Crédito" class="hidden">
+                                <div class="flex gap-1">
+                                    <i class="fab fa-cc-visa text-base text-blue-400"></i>
+                                    <i class="fab fa-cc-mastercard text-base text-orange-400"></i>
+                                </div>
+                                <span class="text-[8px] uppercase font-bold text-center">Tarjeta</span>
                             </label>
                         </div>
 
@@ -416,9 +419,13 @@
                             <input id="pay-binance-id" placeholder="Binance ID" class="w-full bg-dark border border-white/10 p-2 text-sm rounded outline-none focus:border-neon-blue">
                         </div>
                         <div class="bg-white/5 p-4 rounded-xl space-y-2 border border-white/5">
-                            <h4 class="font-bold text-blue-400 text-xs uppercase">PayPal</h4>
-                            <input id="pay-paypal-titular" placeholder="Titular" value="Antonio Jose Caceres Acosta" class="w-full bg-dark border border-white/10 p-2 text-sm rounded outline-none focus:border-neon-blue">
+                            <h4 class="font-bold text-blue-400 text-xs uppercase">PayPal & Tarjetas</h4>
+                            <input id="pay-paypal-titular" placeholder="Titular" class="w-full bg-dark border border-white/10 p-2 text-sm rounded outline-none focus:border-neon-blue">
                             <input id="pay-paypal-email" placeholder="Correo PayPal" class="w-full bg-dark border border-white/10 p-2 text-sm rounded outline-none focus:border-neon-blue">
+                            <div class="pt-2">
+                                <label class="text-[9px] text-gray-500 uppercase font-bold">PayPal Client ID (Para pagos automáticos)</label>
+                                <input id="pay-paypal-clientid" placeholder="Client ID de PayPal" class="w-full bg-dark border border-white/10 p-2 text-[10px] rounded outline-none focus:border-neon-blue font-mono">
+                            </div>
                         </div>
                         <div class="bg-white/5 p-4 rounded-xl space-y-2 border border-white/5">
                             <h4 class="font-bold text-neon-green text-xs uppercase">Airtm</h4>
