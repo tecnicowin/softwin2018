@@ -131,10 +131,7 @@ let paymentSettings = {
     intl: { titular: 'Antonio Jose Caceres Acosta', banco: '', cuenta: '', doc: '' }
 };
 
-const defaultProducts = [
-    { id: '1', type: "software", name: "Windows 11 Professional", category: "OS", price: 149.99, image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Windows_11_logo_and_wordmark.svg/1200px-Windows_11_logo_and_wordmark.svg.png", description: "Licencia digital permanente.", isOffer: false },
-    { id: '5', type: "streaming", name: "Netflix Premium (4K)", category: "Películas", price: 12.99, image: "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg", description: "Acceso total Ultra HD.", isOffer: true }
-];
+
 
 // 5. Logic
 async function handleProductSubmit(e) {
@@ -370,7 +367,7 @@ async function init() {
 }
 
 async function loadAllData() {
-    products = await DB.load('products', defaultProducts);
+    products = await DB.load('products', []);
     orders = await DB.load('orders', []);
     const savedCart = localStorage.getItem('softwin_cart');
     cart = savedCart ? JSON.parse(savedCart) : [];
