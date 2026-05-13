@@ -68,6 +68,10 @@ function toggleModal(id, show) {
         document.getElementById('checkout-success-container')?.classList.add('hidden');
         const submitBtn = document.getElementById('checkout-submit-btn');
         if(submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "Confirmar Pedido"; }
+        
+        // Ensure default payment info is shown
+        const selectedPay = document.querySelector('input[name="payment"]:checked');
+        if(selectedPay) updatePaymentInfo(selectedPay.value);
     }
 }
 
@@ -632,19 +636,35 @@ function handleImageFile(e, target, nameId) {
     }
 }
 
+function updatePaymentInfo(value) {
+    const inf = document.getElementById('pay-info-container');
+    const tit = document.getElementById('pay-title');
+    if(tit) tit.textContent = value;
+    
+    let m = '';
+    const val = value.toLowerCase();
+    if(val.includes('movil 1')) m = 'pm1'; 
+    else if(val.includes('movil 2')) m = 'pm2'; 
+    else if(val.includes('binance')) m = 'binance'; 
+    else if(val.includes('paypal')) m = 'paypal'; 
+    else if(val.includes('airtm')) m = 'airtm'; 
+    else if(val.includes('internacional')) m = 'intl';
+
+    if(m && paymentSettings[m]) {
+        let h = `<p class="text-xs font-bold text-neon-blue">Titular: ${paymentSettings[m].titular}</p>`;
+        Object.keys(paymentSettings[m]).forEach(k => { 
+            if(k !== 'titular' && paymentSettings[m][k]) {
+                const label = k === 'id' ? 'ID' : k === 'doc' ? 'Documento/SWIFT' : k === 'cedula' ? 'Cédula' : k;
+                h += `<p class="text-xs text-gray-400 capitalize">${label}: ${paymentSettings[m][k]}</p>`; 
+            }
+        });
+        if(inf) inf.innerHTML = h;
+    }
+}
+
 function setupPaymentSwitching() {
     const opts = document.querySelectorAll('input[name="payment"]');
-    opts.forEach(o => o.addEventListener('change', () => {
-        const det = document.getElementById('selected-payment-details'); const inf = document.getElementById('pay-info-container'); const tit = document.getElementById('pay-title');
-        if(det) det.classList.remove('hidden'); if(tit) tit.textContent = o.value;
-        let m = '';
-        if(o.value === 'Pago Movil 1') m = 'pm1'; else if(o.value === 'Pago Movil 2') m = 'pm2'; else if(o.value === 'Binance') m = 'binance'; else if(o.value === 'PayPal') m = 'paypal'; else if(o.value === 'Airtm') m = 'airtm'; else if(o.value === 'Internacional') m = 'intl';
-        if(m && paymentSettings[m]) {
-            let h = `<p class="text-xs font-bold text-neon-blue">Titular: ${paymentSettings[m].titular}</p>`;
-            Object.keys(paymentSettings[m]).forEach(k => { if(k !== 'titular' && paymentSettings[m][k]) h += `<p class="text-xs text-gray-400 capitalize">${k === 'id' ? 'ID' : k === 'doc' ? 'Documento/SWIFT' : k}: ${paymentSettings[m][k]}</p>`; });
-            if(inf) inf.innerHTML = h;
-        }
-    }));
+    opts.forEach(o => o.addEventListener('change', () => updatePaymentInfo(o.value)));
 }
 
 function renderFilters() {
