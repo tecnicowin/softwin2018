@@ -217,13 +217,27 @@ async function handleCheckoutSubmit(e) {
         if(submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Procesando..."; }
         
         const oid = Math.floor(Math.random()*90000)+10000;
-        const pay = document.querySelector('input[name="payment"]:checked').value;
+        const pay = document.querySelector('input[name="payment"]:checked')?.value || 'No seleccionado';
         const total = cart.reduce((a,b)=>a+(b.price*b.quantity),0);
+        
+        // Timeout helper
+        const withTimeout = (promise, ms) => Promise.race([
+            promise,
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), ms))
+        ]);
+
+        console.log(`Iniciando pedido #${oid}...`);
         
         let screenshotUrl = "";
         if (tempCheckoutScreenshot) {
-            Notify.info("Subiendo comprobante...");
-            screenshotUrl = await DB.uploadImage(`orders/${oid}`, tempCheckoutScreenshot);
+            try {
+                console.log("Subiendo imagen...");
+                Notify.info("Subiendo comprobante...");
+                screenshotUrl = await withTimeout(DB.uploadImage(`orders/${oid}`, tempCheckoutScreenshot), 8000);
+            } catch (e) {
+                console.warn("Fallo subida de imagen por tiempo, continuando sin ella.");
+                screenshotUrl = ""; 
+            }
         }
 
         const order = { 
@@ -237,9 +251,15 @@ async function handleCheckoutSubmit(e) {
             status: screenshotUrl ? 'Pago Reportado' : 'Por Pagar' 
         };
         
-        await DB.save('orders', oid.toString(), order);
+        try {
+            console.log("Guardando en servidor...");
+            await withTimeout(DB.save('orders', oid.toString(), order), 8000);
+        } catch (e) {
+            console.error("Error al guardar en servidor, continuando vía WhatsApp.", e);
+            Notify.info("Servidor lento, enviando vía WhatsApp...");
+        }
         
-        const waText = encodeURIComponent(`🚀 *SoftWin - Nueva Orden*\n\n📦 *Orden:* #${oid}\n👤 *Cliente:* ${customer.name}\n📱 *WhatsApp:* ${customer.phone}\n💳 *Pago:* ${pay}\n💰 *Total:* $${total.toFixed(2)}\n\n_El comprobante ha sido sincronizado en el sistema._`);
+        const waText = encodeURIComponent(`🚀 *SoftWin - Nueva Orden*\n\n📦 *Orden:* #${oid}\n👤 *Cliente:* ${customer.name}\n📱 *WhatsApp:* ${customer.phone}\n💳 *Pago:* ${pay}\n💰 *Total:* $${total.toFixed(2)}\n\n_El pedido ha sido procesado._`);
         const waLink = `https://wa.me/584242948338?text=${waText}`;
         
         // UI Success state
@@ -253,9 +273,9 @@ async function handleCheckoutSubmit(e) {
         
         cart = []; 
         localStorage.removeItem('softwin_cart');
-        tempCheckoutScreenshot = ""; // Clear screenshot
+        tempCheckoutScreenshot = ""; 
         updateCartUI(); 
-        Notify.success(`¡Orden #${oid} enviada!`);
+        Notify.success(`¡Orden #${oid} procesada!`);
         isLoading = false;
     } catch (error) {
         console.error("Checkout Error:", error);
