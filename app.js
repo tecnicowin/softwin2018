@@ -138,6 +138,7 @@ let currentViewOrderId = null;
 let isLoading = false;
 
 let paymentSettings = {
+    bcv: 36.50,
     pm1: { titular: 'Antonio Jose Caceres Acosta', banco: '', cedula: '', celular: '' },
     pm2: { titular: 'Antonio Jose Caceres Acosta', banco: '', cedula: '', celular: '' },
     binance: { titular: 'Antonio Jose Caceres Acosta', id: '' },
@@ -559,6 +560,11 @@ function switchAdminTab(view) {
 
 async function handlePaymentSave() {
     const ms = ['pm1', 'pm2', 'binance', 'paypal', 'airtm', 'intl'];
+    
+    // Save BCV Rate
+    const bcvInput = document.getElementById('pay-bcv-rate');
+    if(bcvInput) paymentSettings.bcv = parseFloat(bcvInput.value) || 0;
+
     ms.forEach(m => {
         Object.keys(paymentSettings[m]).forEach(k => {
             const el = document.getElementById(`pay-${m}-${k}`);
@@ -679,6 +685,18 @@ function updatePaymentInfo(value) {
 
     if(m && paymentSettings[m]) {
         let h = `<p class="text-xs font-bold text-neon-blue">Titular: ${paymentSettings[m].titular}</p>`;
+        
+        // Show BCV Conversion for Pago Movil
+        if(m === 'pm1' || m === 'pm2') {
+            const totalUSD = cart.reduce((a,b)=>a+(b.price*b.quantity),0);
+            const totalBS = (totalUSD * (paymentSettings.bcv || 1)).toFixed(2);
+            h += `<div class="mt-3 p-3 bg-neon-blue/10 border border-neon-blue/20 rounded-xl">
+                    <p class="text-[10px] text-gray-400 uppercase font-bold">Total a pagar en Bs:</p>
+                    <p class="text-lg font-black text-neon-blue">${totalBS} Bs</p>
+                    <p class="text-[9px] text-gray-500 italic">Tasa BCV: ${paymentSettings.bcv} Bs/$</p>
+                  </div>`;
+        }
+
         Object.keys(paymentSettings[m]).forEach(k => { 
             if(k !== 'titular' && paymentSettings[m][k]) {
                 const labels = { banco: 'Banco', cedula: 'Cédula', celular: 'Teléfono', email: 'Correo', id: 'ID Binance', cuenta: 'N° Cuenta', doc: 'Documento/SWIFT' };
@@ -748,6 +766,9 @@ function resetAdminForm() {
 }
 
 function loadPaymentSettingsIntoForm() {
+    const bcvInput = document.getElementById('pay-bcv-rate');
+    if(bcvInput) bcvInput.value = paymentSettings.bcv || 0;
+
     const ms = ['pm1', 'pm2', 'binance', 'paypal', 'airtm', 'intl'];
     ms.forEach(m => {
         if(paymentSettings[m]) Object.keys(paymentSettings[m]).forEach(k => {
