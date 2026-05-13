@@ -640,25 +640,31 @@ function updatePaymentInfo(value) {
     const inf = document.getElementById('pay-info-container');
     const tit = document.getElementById('pay-title');
     if(tit) tit.textContent = value;
+    if(inf) inf.innerHTML = ''; // Limpiar antes de mostrar
+
+    const normalize = (s) => s.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const val = normalize(value || '');
     
     let m = '';
-    const val = value.toLowerCase();
     if(val.includes('movil 1')) m = 'pm1'; 
     else if(val.includes('movil 2')) m = 'pm2'; 
     else if(val.includes('binance')) m = 'binance'; 
     else if(val.includes('paypal')) m = 'paypal'; 
     else if(val.includes('airtm')) m = 'airtm'; 
-    else if(val.includes('internacional')) m = 'intl';
+    else if(val.includes('internacional') || val.includes('intl')) m = 'intl';
 
     if(m && paymentSettings[m]) {
         let h = `<p class="text-xs font-bold text-neon-blue">Titular: ${paymentSettings[m].titular}</p>`;
         Object.keys(paymentSettings[m]).forEach(k => { 
             if(k !== 'titular' && paymentSettings[m][k]) {
-                const label = k === 'id' ? 'ID' : k === 'doc' ? 'Documento/SWIFT' : k === 'cedula' ? 'Cédula' : k;
+                const labels = { banco: 'Banco', cedula: 'Cédula', celular: 'Teléfono', email: 'Correo', id: 'ID Binance', cuenta: 'N° Cuenta', doc: 'Documento/SWIFT' };
+                const label = labels[k] || k.toUpperCase();
                 h += `<p class="text-xs text-gray-400 capitalize">${label}: ${paymentSettings[m][k]}</p>`; 
             }
         });
         if(inf) inf.innerHTML = h;
+    } else {
+        if(inf) inf.innerHTML = '<p class="text-xs text-gray-500 italic">Información no disponible</p>';
     }
 }
 
