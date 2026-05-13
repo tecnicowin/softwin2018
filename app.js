@@ -624,9 +624,12 @@ function setupPaymentSwitching() {
 function renderFilters() {
     const container = document.getElementById('filter-buttons'); if(!container) return;
     if(window.currentCatalog === 'ofertas') { container.innerHTML = ''; return; }
-    const filters = window.currentCatalog === 'software' ? [{id:'all',l:'Todos'},{id:'OS',l:'S.O.'},{id:'Diseno',l:'Diseño'},{id:'Prog',l:'Programación'},{id:'Anti',l:'Antivirus'}] : [{id:'all',l:'Todos'},{id:'Movie',l:'Películas'},{id:'Combo',l:'Combos'},{id:'Music',l:'Música'},{id:'TV',l:'TV'}];
+    const filters = window.currentCatalog === 'software' ? 
+        [{id:'all',l:'Todos'},{id:'OS',l:'S.O.'},{id:'Database',l:'Base de Datos'},{id:'Diseño',l:'Diseño'},{id:'Programación',l:'Programación'},{id:'Antivirus',l:'Antivirus'}] : 
+        [{id:'all',l:'Todos'},{id:'Películas',l:'Películas'},{id:'Combos',l:'Combos'},{id:'Música',l:'Música'},{id:'TV',l:'TV'},{id:'Juegos',l:'Juegos'}];
+    
     container.innerHTML = filters.map(f => `
-        <button id="f-${f.id}" data-filter="${f.id}" class="filter-btn px-4 py-2 ${f.id==='all'?'bg-neon-blue text-dark font-bold':'text-gray-400 hover:bg-white/5'} rounded-lg text-sm transition-all">
+        <button id="f-${f.id}" data-filter="${f.id}" class="filter-btn px-4 py-2 ${f.id==='all'?'bg-neon-blue text-dark font-bold':'text-gray-400 hover:bg-white/5'} rounded-lg text-sm transition-all cursor-pointer">
             ${f.l}
         </button>`).join('');
     
@@ -650,9 +653,11 @@ function applyFilter(btn) {
         if (window.currentCatalog === 'ofertas' && !p.isOffer) return false;
         if (filterValue === 'all') return true;
         
-        const cat = (p.category || '').toLowerCase();
-        const f = filterValue.toLowerCase();
-        return cat.includes(f);
+        const normalize = (s) => s.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const cat = normalize(p.category || '');
+        const f = normalize(filterValue);
+        
+        return cat.includes(f) || f.includes(cat);
     });
     
     renderProducts(filtered);
