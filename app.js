@@ -431,7 +431,13 @@ async function loadAllData() {
     const p = settings?.find(s => s.id === 'payments');
     if (p) {
         Object.keys(paymentSettings).forEach(m => {
-            if(p[m]) Object.keys(paymentSettings[m]).forEach(k => { if(p[m][k] !== undefined) paymentSettings[m][k] = p[m][k]; });
+            if (m === 'bcv') {
+                if (p.bcv !== undefined) paymentSettings.bcv = parseFloat(p.bcv) || 36.50;
+            } else if (p[m]) {
+                Object.keys(paymentSettings[m]).forEach(k => { 
+                    if(p[m][k] !== undefined) paymentSettings[m][k] = p[m][k]; 
+                });
+            }
         });
     }
 }
