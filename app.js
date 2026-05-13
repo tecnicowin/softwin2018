@@ -228,27 +228,22 @@ async function handleCheckoutSubmit(e) {
 
         console.log(`Iniciando pedido #${oid}...`);
         
-        let screenshotUrl = "";
-        if (tempCheckoutScreenshot) {
-            try {
-                console.log("Subiendo imagen...");
-                Notify.info("Subiendo comprobante...");
-                screenshotUrl = await withTimeout(DB.uploadImage(`orders/${oid}`, tempCheckoutScreenshot), 8000);
-            } catch (e) {
-                console.warn("Fallo subida de imagen por tiempo, continuando sin ella.");
-                screenshotUrl = ""; 
-            }
-        }
+        const paymentData = {
+            ref: document.getElementById('user-ref').value,
+            amount: document.getElementById('user-amount').value,
+            date: document.getElementById('user-date').value,
+            bank: document.getElementById('user-bank').value
+        };
 
         const order = { 
             id: oid.toString(), 
             timestamp: Date.now(), 
             customer, 
             paymentMethod: pay, 
+            paymentData,
             items: cart.map(i => ({ id: i.id, name: i.name, quantity: i.quantity, price: i.price })), 
             total, 
-            screenshot: screenshotUrl, 
-            status: screenshotUrl ? 'Pago Reportado' : 'Por Pagar' 
+            status: 'Pago Reportado' 
         };
         
         try {
@@ -256,10 +251,20 @@ async function handleCheckoutSubmit(e) {
             await withTimeout(DB.save('orders', oid.toString(), order), 8000);
         } catch (e) {
             console.error("Error al guardar en servidor, continuando vía WhatsApp.", e);
-            Notify.info("Servidor lento, enviando vía WhatsApp...");
         }
         
-        const waText = encodeURIComponent(`🚀 *SoftWin - Nueva Orden*\n\n📦 *Orden:* #${oid}\n👤 *Cliente:* ${customer.name}\n📱 *WhatsApp:* ${customer.phone}\n💳 *Pago:* ${pay}\n💰 *Total:* $${total.toFixed(2)}\n\n_El pedido ha sido procesado._`);
+        const waText = encodeURIComponent(`🚀 *SoftWin - Nueva Orden*\n\n` +
+            `📦 *Orden:* #${oid}\n` +
+            `👤 *Cliente:* ${customer.name}\n` +
+            `💳 *Pago:* ${pay}\n` +
+            `💰 *Total:* $${total.toFixed(2)}\n\n` +
+            `📝 *Datos del Pago:*\n` +
+            `🔹 *Ref:* ${paymentData.ref}\n` +
+            `🔹 *Monto:* ${paymentData.amount}\n` +
+            `🔹 *Fecha:* ${paymentData.date}\n` +
+            `🔹 *Banco:* ${paymentData.bank}\n\n` +
+            `⚠️ *Por favor, adjunte la captura del comprobante a este chat.*`);
+            
         const waLink = `https://wa.me/584242948338?text=${waText}`;
         
         // UI Success state
@@ -268,12 +273,10 @@ async function handleCheckoutSubmit(e) {
         document.getElementById('success-order-id').textContent = `#${oid}`;
         document.getElementById('success-wa-link').href = waLink;
 
-        // Try automatic open (might be blocked)
         window.open(waLink, '_blank');
         
         cart = []; 
         localStorage.removeItem('softwin_cart');
-        tempCheckoutScreenshot = ""; 
         updateCartUI(); 
         Notify.success(`¡Orden #${oid} procesada!`);
         isLoading = false;
