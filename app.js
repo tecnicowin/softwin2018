@@ -58,6 +58,13 @@ function toggleModal(id, show) {
         }
     }
     if (ov) ov.classList.toggle('hidden', !show);
+
+    if (id === 'user-modal' && show) {
+        document.getElementById('checkout-form-container')?.classList.remove('hidden');
+        document.getElementById('checkout-success-container')?.classList.add('hidden');
+        const submitBtn = document.getElementById('checkout-submit-btn');
+        if(submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "Confirmar Pedido"; }
+    }
 }
 
 function closeEverything() {
@@ -189,7 +196,9 @@ async function handleCheckoutSubmit(e) {
     e.preventDefault();
     if (isLoading) return;
 
+    const submitBtn = document.getElementById('checkout-submit-btn');
     const customer = { name: document.getElementById('user-name').value, phone: document.getElementById('user-phone').value };
+    
     if (customer.phone.length < 8) {
         Notify.error("Número de WhatsApp inválido");
         return;
@@ -197,6 +206,8 @@ async function handleCheckoutSubmit(e) {
 
     try {
         isLoading = true;
+        if(submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Procesando..."; }
+        
         const oid = Math.floor(Math.random()*90000)+10000;
         const pay = document.querySelector('input[name="payment"]:checked').value;
         const total = cart.reduce((a,b)=>a+(b.price*b.quantity),0);
@@ -220,17 +231,27 @@ async function handleCheckoutSubmit(e) {
         
         await DB.save('orders', oid.toString(), order);
         
-        window.open(`https://wa.me/584242948338?text=${encodeURIComponent(`🚀 *SoftWin - Nueva Orden*\n\n📦 *Orden:* #${oid}\n👤 *Cliente:* ${customer.name}\n📱 *WhatsApp:* ${customer.phone}\n💳 *Pago:* ${pay}\n💰 *Total:* $${total.toFixed(2)}\n\n_El comprobante ha sido sincronizado en el sistema._`)}`, '_blank');
+        const waText = encodeURIComponent(`🚀 *SoftWin - Nueva Orden*\n\n📦 *Orden:* #${oid}\n👤 *Cliente:* ${customer.name}\n📱 *WhatsApp:* ${customer.phone}\n💳 *Pago:* ${pay}\n💰 *Total:* $${total.toFixed(2)}\n\n_El comprobante ha sido sincronizado en el sistema._`);
+        const waLink = `https://wa.me/584242948338?text=${waText}`;
+        
+        // UI Success state
+        document.getElementById('checkout-form-container').classList.add('hidden');
+        document.getElementById('checkout-success-container').classList.remove('hidden');
+        document.getElementById('success-order-id').textContent = `#${oid}`;
+        document.getElementById('success-wa-link').href = waLink;
+
+        // Try automatic open (might be blocked)
+        window.open(waLink, '_blank');
         
         cart = []; 
         localStorage.removeItem('softwin_cart');
         updateCartUI(); 
-        closeEverything(); 
-        Notify.success(`¡Orden #${oid} recibida en el servidor!`);
+        Notify.success(`¡Orden #${oid} enviada!`);
         isLoading = false;
     } catch (error) {
         console.error(error);
         Notify.error("Error al procesar el pedido");
+        if(submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "Confirmar Pedido"; }
         isLoading = false;
     }
 }
